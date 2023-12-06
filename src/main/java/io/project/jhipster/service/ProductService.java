@@ -3,6 +3,7 @@ package io.project.jhipster.service;
 import io.project.jhipster.domain.Product;
 import io.project.jhipster.repository.ProductRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -96,39 +97,50 @@ public class ProductService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Page<Product> findAll(Product product, Pageable pageable) {
+    public Page<Product> findAll(String name, Double minPrice, Double maxPrice, Integer quantityUpTo, LocalDate publishDateFrom, LocalDate publishDateTo, Pageable pageable) {
         log.debug("Request to get all Products");
-        Page<Product> result = productRepository.findAll(new Specification<Product>() {
-            @Override
-            public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                List<Predicate> predicates = new ArrayList<>();
-                if (product.getName()!=null) {
-                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("name"), product.getName())));
-                }
-                if(product.getPrice()!=null){
-                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("price"), product.getPrice())));
-                }
-                if(product.getQuantity()!=null){
-                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("quantity"), product.getQuantity())));
-                }
-                if(product.getDescription()!=null){
-                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("description"), product.getDescription())));
-                }
-                if(product.getPublishDate()!=null){
-                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("publishDate"), product.getPublishDate())));
-                }
-
-                if(predicates.isEmpty()){
-                    return null;
-                }
-                return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-            }
-        }, pageable);
-
-        if(result==null){
-            return productRepository.findAll(pageable);
+        if(quantityUpTo==null){
+            quantityUpTo=0;
         }
-        return result;
+        return productRepository.findAllBySearchParam(
+            name,
+            minPrice,
+            maxPrice,
+            quantityUpTo,
+            publishDateFrom,
+            publishDateTo,
+            pageable);
+//        Page<Product> result = productRepository.findAll(new Specification<Product>() {
+//            @Override
+//            public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+//                List<Predicate> predicates = new ArrayList<>();
+//                if (product.getName()!=null) {
+//                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("name"), product.getName())));
+//                }
+//                if(product.getPrice()!=null){
+//                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("price"), product.getPrice())));
+//                }
+//                if(product.getQuantity()!=null){
+//                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("quantity"), product.getQuantity())));
+//                }
+//                if(product.getDescription()!=null){
+//                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("description"), product.getDescription())));
+//                }
+//                if(product.getPublishDate()!=null){
+//                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("publishDate"), product.getPublishDate())));
+//                }
+//
+//                if(predicates.isEmpty()){
+//                    return null;
+//                }
+//                return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+//            }
+//        }, pageable);
+//
+//        if(result==null){
+//            return productRepository.findAll(pageable);
+//        }
+//        return result;
     }
 
     /**

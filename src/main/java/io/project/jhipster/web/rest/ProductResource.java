@@ -6,14 +6,17 @@ import io.project.jhipster.service.ProductService;
 import io.project.jhipster.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -141,9 +144,16 @@ public class ProductResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of products in body.
      */
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts(Product product,@org.springdoc.api.annotations.ParameterObject Pageable pageable) {
+    public ResponseEntity<List<Product>> getAllProducts(
+        @RequestParam(name = "name", required = false, defaultValue = "") String name,
+        @RequestParam(name = "minPrice", required = false) Double minPrice,
+        @RequestParam(name = "maxPrice", required = false) Double maxPrice,
+        @RequestParam(name = "quantityUpTo", required = false) Integer quantityUpTo,
+        @RequestParam(name = "publishDateFrom", required = false) LocalDate publishDateFrom,
+        @RequestParam(name = "publishDateTo", required = false) LocalDate publishDateTo,
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable) {
         log.debug("REST request to get a page of Products");
-        Page<Product> page = productService.findAll(product, pageable);
+        Page<Product> page = productService.findAll(name, minPrice, maxPrice, quantityUpTo, publishDateFrom, publishDateTo, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

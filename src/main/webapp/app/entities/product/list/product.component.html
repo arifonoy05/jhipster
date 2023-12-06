@@ -18,50 +18,89 @@
       </button>
     </div>
   </h2>
-  
+
   <span id="searchBlock">
     <form [formGroup]="searchForm" (submit)="doAdvancedSearch()">
       <div class="modal-header">
         <h4 class="modal-title" data-cy="productDeleteDialogHeading">Search</h4>
       </div>
-    
+
       <div class="modal-body">
         <jhi-alert-error></jhi-alert-error>
         <div>
           <jhi-alert-error></jhi-alert-error>
+
+          <!-- 
+            name
+            minPrice
+            maxPrice
+            quantityUpTo
+            publishDateTo
+            publishDateFrom
+           -->
+
           <div class="row mb-3">
-            <label class="form-label" for="field_name">Name</label>
-            <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
-          </div>
-    
-          <div class="row mb-3">
-            <label class="form-label" for="field_price">Price</label>
-            <input type="number" class="form-control" name="price" id="field_price" data-cy="price" formControlName="price" />
-          </div>
-    
-          <div class="row mb-3">
-            <label class="form-label" for="field_quantity">Quantity</label>
-            <input type="number" class="form-control" name="quantity" id="field_quantity" data-cy="quantity" formControlName="quantity" />
+            <div class="col-12">
+              <label class="form-label" for="field_name">Name</label>
+              <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
+            </div>
           </div>
 
           <div class="row mb-3">
-            <label class="form-label" for="field_publishDate">Publish Date</label>
-            <input type="date" class="form-control" name="publishDate" id="field_publishDate" data-cy="publishDate" formControlName="publishDate" />
+            <div class="col-6">
+              <label class="form-label" for="field_minPrice">Min Price</label>
+              <input type="number" class="form-control" name="minPrice" id="field_minPrice" data-cy="minPrice" formControlName="minPrice" />
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="field_maxPrice">Max Price</label>
+              <input type="number" class="form-control" name="maxPrice" id="field_maxPrice" data-cy="maxPrice" formControlName="maxPrice" />
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-12">
+              <label class="form-label" for="field_quantityUpTo">Quantity</label>
+              <input type="number" class="form-control" name="quantityUpTo" id="field_quantityUpTo" data-cy="quantityUpTo" formControlName="quantityUpTo" />
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-6">
+              <label class="form-label" for="field_publishDateFrom">Publish Date From</label>
+              <input
+                type="date"
+                class="form-control"
+                name="publishDateFrom"
+                id="field_publishDateFrom"
+                data-cy="publishDateFrom"
+                formControlName="publishDateFrom"
+              />
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="field_publishDateTo">Publish Date To</label>
+              <input
+                type="date"
+                class="form-control"
+                name="publishDateTo"
+                id="field_publishDateTo"
+                data-cy="publishDateTo"
+                formControlName="publishDateTo"
+              />
+            </div>
           </div>
         </div>
       </div>
-    
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="resetForm()">
           <fa-icon icon="ban"></fa-icon>&nbsp;<span>Reset</span>
         </button>
-    
+
         <button id="jhi-confirm-delete-product" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-primary">
           <fa-icon icon="search"></fa-icon>&nbsp;<span>Search</span>
         </button>
       </div>
     </form>
-    
   </span>
 
   <jhi-alert-error></jhi-alert-error>

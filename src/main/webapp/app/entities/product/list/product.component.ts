@@ -21,8 +21,8 @@ import {
 import { EntityArrayResponseType, ProductService } from '../service/product.service';
 import { ProductDeleteDialogComponent } from '../delete/product-delete-dialog.component';
 import { FilterOptions, IFilterOptions, IFilterOption } from 'app/shared/filter/filter.model';
-import { ProductSearchComponent } from '../product-search/product-search.component';
 import { FormControl, FormGroup } from '@angular/forms';
+import { Dayjs } from 'dayjs';
 
 @Component({
     selector: 'jhi-product',
@@ -42,10 +42,12 @@ export class ProductComponent implements OnInit {
     page = 1;
 
     searchForm = new FormGroup({
-      name: new FormControl(null),
-      price: new FormControl(null),
-      quantity: new FormControl(null),
-      publishDate: new FormControl(null),
+        name: new FormControl<string>(""),
+        minPrice: new FormControl<number | null>(null),
+        maxPrice: new FormControl<number | null >(null),
+        quantityUpTo: new FormControl<number | null>(null),
+        publishDateTo: new FormControl<Dayjs | null>(null),
+        publishDateFrom: new FormControl<Dayjs | null>(null)
     });
   
 
@@ -169,7 +171,8 @@ export class ProductComponent implements OnInit {
         sort: this.getSortQueryParam(predicate, ascending),
       };
       
-
+      console.log("AAAAAAA",queryObject);
+      
 
       filterOptions?.forEach(filterOption => {
         queryObject[filterOption.name] = filterOption.values;
@@ -210,10 +213,12 @@ export class ProductComponent implements OnInit {
 
     resetForm(): void {
       this.searchForm = new FormGroup({
-        name: new FormControl(null),
-        price: new FormControl(null),
-        quantity: new FormControl(null),
-        publishDate: new FormControl(null)
+        name: new FormControl<string>(""),
+        minPrice: new FormControl<number | null>(null),
+        maxPrice: new FormControl<number | null >(null),
+        quantityUpTo: new FormControl<number | null>(null),
+        publishDateTo: new FormControl<Dayjs | null>(null),
+        publishDateFrom: new FormControl<Dayjs | null>(null)
       });
       this.doAdvancedSearch();
     }
