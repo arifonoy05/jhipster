@@ -29,6 +29,9 @@ public class Customer implements Serializable {
     @Column(name = "email")
     private String email;
 
+    @ManyToOne
+    private ProductType productType;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -81,6 +84,19 @@ public class Customer implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public ProductType getProductType() {
+        return this.productType;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
+    }
+
+    public Customer productType(ProductType productType) {
+        this.setProductType(productType);
+        return this;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

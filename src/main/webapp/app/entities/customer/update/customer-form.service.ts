@@ -21,6 +21,7 @@ type CustomerFormGroupContent = {
   name: FormControl<ICustomer['name']>;
   createdAt: FormControl<ICustomer['createdAt']>;
   email: FormControl<ICustomer['email']>;
+  productType: FormControl<ICustomer['productType']>;
 };
 
 export type CustomerFormGroup = FormGroup<CustomerFormGroupContent>;
@@ -43,6 +44,7 @@ export class CustomerFormService {
       name: new FormControl(customerRawValue.name),
       createdAt: new FormControl(customerRawValue.createdAt),
       email: new FormControl(customerRawValue.email),
+      productType: new FormControl(customerRawValue.productType),
     });
   }
 

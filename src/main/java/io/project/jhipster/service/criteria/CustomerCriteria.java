@@ -29,6 +29,8 @@ public class CustomerCriteria implements Serializable, Criteria {
 
     private StringFilter email;
 
+    private LongFilter productTypeId;
+
     private Boolean distinct;
 
     public CustomerCriteria() {}
@@ -38,6 +40,7 @@ public class CustomerCriteria implements Serializable, Criteria {
         this.name = other.name == null ? null : other.name.copy();
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.email = other.email == null ? null : other.email.copy();
+        this.productTypeId = other.productTypeId == null ? null : other.productTypeId.copy();
         this.distinct = other.distinct;
     }
 
@@ -106,6 +109,21 @@ public class CustomerCriteria implements Serializable, Criteria {
         this.email = email;
     }
 
+    public LongFilter getProductTypeId() {
+        return productTypeId;
+    }
+
+    public LongFilter productTypeId() {
+        if (productTypeId == null) {
+            productTypeId = new LongFilter();
+        }
+        return productTypeId;
+    }
+
+    public void setProductTypeId(LongFilter productTypeId) {
+        this.productTypeId = productTypeId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -128,13 +146,14 @@ public class CustomerCriteria implements Serializable, Criteria {
             Objects.equals(name, that.name) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(email, that.email) &&
+            Objects.equals(productTypeId, that.productTypeId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, createdAt, email, distinct);
+        return Objects.hash(id, name, createdAt, email, productTypeId, distinct);
     }
 
     // prettier-ignore
@@ -145,6 +164,7 @@ public class CustomerCriteria implements Serializable, Criteria {
             (name != null ? "name=" + name + ", " : "") +
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (email != null ? "email=" + email + ", " : "") +
+            (productTypeId != null ? "productTypeId=" + productTypeId + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";
     }

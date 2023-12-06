@@ -18,6 +18,13 @@
   "name": "Customer",
   "pagination": "pagination",
   "readOnly": false,
-  "relationships": [],
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "productType",
+      "relationshipName": "productType",
+      "relationshipType": "many-to-one"
+    }
+  ],
   "service": "serviceClass"
 }

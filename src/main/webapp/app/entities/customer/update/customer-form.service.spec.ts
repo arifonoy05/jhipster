@@ -23,6 +23,7 @@ describe('Customer Form Service', () => {
             name: expect.any(Object),
             createdAt: expect.any(Object),
             email: expect.any(Object),
+            productType: expect.any(Object),
           })
         );
       });
@@ -36,6 +37,7 @@ describe('Customer Form Service', () => {
             name: expect.any(Object),
             createdAt: expect.any(Object),
             email: expect.any(Object),
+            productType: expect.any(Object),
           })
         );
       });

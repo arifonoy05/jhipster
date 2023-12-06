@@ -58,6 +58,12 @@
               <fa-icon class="p-1" icon="sort"></fa-icon>
             </div>
           </th>
+          <th scope="col" jhiSortBy="productType.name">
+            <div class="d-flex">
+              <span>Product Type</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
           <th scope="col"></th>
         </tr>
       </thead>
@@ -69,6 +75,11 @@
           <td>{{ customer.name }}</td>
           <td>{{ customer.createdAt | formatMediumDate }}</td>
           <td>{{ customer.email }}</td>
+          <td>
+            <div *ngIf="customer.productType">
+              <a [routerLink]="['/product-type', customer.productType.id, 'view']">{{ customer.productType.name }}</a>
+            </div>
+          </td>
           <td class="text-end">
             <div class="btn-group">
               <button

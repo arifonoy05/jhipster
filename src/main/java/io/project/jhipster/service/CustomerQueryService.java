@@ -94,6 +94,15 @@ public class CustomerQueryService extends QueryService<Customer> {
             if (criteria.getEmail() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getEmail(), Customer_.email));
             }
+            if (criteria.getProductTypeId() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(
+                            criteria.getProductTypeId(),
+                            root -> root.join(Customer_.productType, JoinType.LEFT).get(ProductType_.id)
+                        )
+                    );
+            }
         }
         return specification;
     }
