@@ -2,6 +2,7 @@ package io.project.jhipster.web.rest;
 
 import io.project.jhipster.domain.ProductType;
 import io.project.jhipster.repository.ProductTypeRepository;
+import io.project.jhipster.service.ProductTypeService;
 import io.project.jhipster.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,10 +12,15 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
@@ -22,7 +28,6 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api")
-@Transactional
 public class ProductTypeResource {
 
     private final Logger log = LoggerFactory.getLogger(ProductTypeResource.class);
@@ -32,9 +37,12 @@ public class ProductTypeResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final ProductTypeService productTypeService;
+
     private final ProductTypeRepository productTypeRepository;
 
-    public ProductTypeResource(ProductTypeRepository productTypeRepository) {
+    public ProductTypeResource(ProductTypeService productTypeService, ProductTypeRepository productTypeRepository) {
+        this.productTypeService = productTypeService;
         this.productTypeRepository = productTypeRepository;
     }
 
@@ -51,7 +59,7 @@ public class ProductTypeResource {
         if (productType.getId() != null) {
             throw new BadRequestAlertException("A new productType cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        ProductType result = productTypeRepository.save(productType);
+        ProductType result = productTypeService.save(productType);
         return ResponseEntity
             .created(new URI("/api/product-types/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -85,7 +93,7 @@ public class ProductTypeResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        ProductType result = productTypeRepository.save(productType);
+        ProductType result = productTypeService.update(productType);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, productType.getId().toString()))
@@ -120,19 +128,7 @@ public class ProductTypeResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<ProductType> result = productTypeRepository
-            .findById(productType.getId())
-            .map(existingProductType -> {
-                if (productType.getName() != null) {
-                    existingProductType.setName(productType.getName());
-                }
-                if (productType.getCategory() != null) {
-                    existingProductType.setCategory(productType.getCategory());
-                }
-
-                return existingProductType;
-            })
-            .map(productTypeRepository::save);
+        Optional<ProductType> result = productTypeService.partialUpdate(productType);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -143,12 +139,15 @@ public class ProductTypeResource {
     /**
      * {@code GET  /product-types} : get all the productTypes.
      *
+     * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of productTypes in body.
      */
     @GetMapping("/product-types")
-    public List<ProductType> getAllProductTypes() {
-        log.debug("REST request to get all ProductTypes");
-        return productTypeRepository.findAll();
+    public ResponseEntity<List<ProductType>> getAllProductTypes(@org.springdoc.api.annotations.ParameterObject Pageable pageable) {
+        log.debug("REST request to get a page of ProductTypes");
+        Page<ProductType> page = productTypeService.findAll(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
@@ -160,7 +159,7 @@ public class ProductTypeResource {
     @GetMapping("/product-types/{id}")
     public ResponseEntity<ProductType> getProductType(@PathVariable Long id) {
         log.debug("REST request to get ProductType : {}", id);
-        Optional<ProductType> productType = productTypeRepository.findById(id);
+        Optional<ProductType> productType = productTypeService.findOne(id);
         return ResponseUtil.wrapOrNotFound(productType);
     }
 
@@ -173,7 +172,7 @@ public class ProductTypeResource {
     @DeleteMapping("/product-types/{id}")
     public ResponseEntity<Void> deleteProductType(@PathVariable Long id) {
         log.debug("REST request to delete ProductType : {}", id);
-        productTypeRepository.deleteById(id);
+        productTypeService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

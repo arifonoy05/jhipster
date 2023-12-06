@@ -2,6 +2,7 @@ package io.project.jhipster.web.rest;
 
 import io.project.jhipster.domain.Product;
 import io.project.jhipster.repository.ProductRepository;
+import io.project.jhipster.service.ProductService;
 import io.project.jhipster.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,10 +12,15 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
@@ -22,7 +28,6 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api")
-@Transactional
 public class ProductResource {
 
     private final Logger log = LoggerFactory.getLogger(ProductResource.class);
@@ -32,9 +37,12 @@ public class ProductResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final ProductService productService;
+
     private final ProductRepository productRepository;
 
-    public ProductResource(ProductRepository productRepository) {
+    public ProductResource(ProductService productService, ProductRepository productRepository) {
+        this.productService = productService;
         this.productRepository = productRepository;
     }
 
@@ -51,7 +59,7 @@ public class ProductResource {
         if (product.getId() != null) {
             throw new BadRequestAlertException("A new product cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Product result = productRepository.save(product);
+        Product result = productService.save(product);
         return ResponseEntity
             .created(new URI("/api/products/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -83,7 +91,7 @@ public class ProductResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Product result = productRepository.save(product);
+        Product result = productService.update(product);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, product.getId().toString()))
@@ -118,28 +126,7 @@ public class ProductResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Product> result = productRepository
-            .findById(product.getId())
-            .map(existingProduct -> {
-                if (product.getName() != null) {
-                    existingProduct.setName(product.getName());
-                }
-                if (product.getPrice() != null) {
-                    existingProduct.setPrice(product.getPrice());
-                }
-                if (product.getQuantity() != null) {
-                    existingProduct.setQuantity(product.getQuantity());
-                }
-                if (product.getDescription() != null) {
-                    existingProduct.setDescription(product.getDescription());
-                }
-                if (product.getPublishDate() != null) {
-                    existingProduct.setPublishDate(product.getPublishDate());
-                }
-
-                return existingProduct;
-            })
-            .map(productRepository::save);
+        Optional<Product> result = productService.partialUpdate(product);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -150,12 +137,15 @@ public class ProductResource {
     /**
      * {@code GET  /products} : get all the products.
      *
+     * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of products in body.
      */
     @GetMapping("/products")
-    public List<Product> getAllProducts() {
-        log.debug("REST request to get all Products");
-        return productRepository.findAll();
+    public ResponseEntity<List<Product>> getAllProducts(@org.springdoc.api.annotations.ParameterObject Pageable pageable) {
+        log.debug("REST request to get a page of Products");
+        Page<Product> page = productService.findAll(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
@@ -167,7 +157,7 @@ public class ProductResource {
     @GetMapping("/products/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Long id) {
         log.debug("REST request to get Product : {}", id);
-        Optional<Product> product = productRepository.findById(id);
+        Optional<Product> product = productService.findOne(id);
         return ResponseUtil.wrapOrNotFound(product);
     }
 
@@ -180,7 +170,7 @@ public class ProductResource {
     @DeleteMapping("/products/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         log.debug("REST request to delete Product : {}", id);
-        productRepository.deleteById(id);
+        productService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

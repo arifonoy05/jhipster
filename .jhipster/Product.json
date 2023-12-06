@@ -22,6 +22,10 @@
       "fieldType": "LocalDate"
     }
   ],
+  "jpaMetamodelFiltering": false,
   "name": "Product",
-  "relationships": []
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
 }

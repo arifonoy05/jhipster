@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.project.jhipster.IntegrationTest;
 import io.project.jhipster.domain.Customer;
 import io.project.jhipster.repository.CustomerRepository;
+import io.project.jhipster.service.criteria.CustomerCriteria;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -36,6 +37,7 @@ class CustomerResourceIT {
 
     private static final LocalDate DEFAULT_CREATED_AT = LocalDate.ofEpochDay(0L);
     private static final LocalDate UPDATED_CREATED_AT = LocalDate.now(ZoneId.systemDefault());
+    private static final LocalDate SMALLER_CREATED_AT = LocalDate.ofEpochDay(-1L);
 
     private static final String DEFAULT_EMAIL = "AAAAAAAAAA";
     private static final String UPDATED_EMAIL = "BBBBBBBBBB";
@@ -152,6 +154,285 @@ class CustomerResourceIT {
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL));
+    }
+
+    @Test
+    @Transactional
+    void getCustomersByIdFiltering() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        Long id = customer.getId();
+
+        defaultCustomerShouldBeFound("id.equals=" + id);
+        defaultCustomerShouldNotBeFound("id.notEquals=" + id);
+
+        defaultCustomerShouldBeFound("id.greaterThanOrEqual=" + id);
+        defaultCustomerShouldNotBeFound("id.greaterThan=" + id);
+
+        defaultCustomerShouldBeFound("id.lessThanOrEqual=" + id);
+        defaultCustomerShouldNotBeFound("id.lessThan=" + id);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where name equals to DEFAULT_NAME
+        defaultCustomerShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the customerList where name equals to UPDATED_NAME
+        defaultCustomerShouldNotBeFound("name.equals=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultCustomerShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the customerList where name equals to UPDATED_NAME
+        defaultCustomerShouldNotBeFound("name.in=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where name is not null
+        defaultCustomerShouldBeFound("name.specified=true");
+
+        // Get all the customerList where name is null
+        defaultCustomerShouldNotBeFound("name.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByNameContainsSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where name contains DEFAULT_NAME
+        defaultCustomerShouldBeFound("name.contains=" + DEFAULT_NAME);
+
+        // Get all the customerList where name contains UPDATED_NAME
+        defaultCustomerShouldNotBeFound("name.contains=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByNameNotContainsSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where name does not contain DEFAULT_NAME
+        defaultCustomerShouldNotBeFound("name.doesNotContain=" + DEFAULT_NAME);
+
+        // Get all the customerList where name does not contain UPDATED_NAME
+        defaultCustomerShouldBeFound("name.doesNotContain=" + UPDATED_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByCreatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where createdAt equals to DEFAULT_CREATED_AT
+        defaultCustomerShouldBeFound("createdAt.equals=" + DEFAULT_CREATED_AT);
+
+        // Get all the customerList where createdAt equals to UPDATED_CREATED_AT
+        defaultCustomerShouldNotBeFound("createdAt.equals=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByCreatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where createdAt in DEFAULT_CREATED_AT or UPDATED_CREATED_AT
+        defaultCustomerShouldBeFound("createdAt.in=" + DEFAULT_CREATED_AT + "," + UPDATED_CREATED_AT);
+
+        // Get all the customerList where createdAt equals to UPDATED_CREATED_AT
+        defaultCustomerShouldNotBeFound("createdAt.in=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByCreatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where createdAt is not null
+        defaultCustomerShouldBeFound("createdAt.specified=true");
+
+        // Get all the customerList where createdAt is null
+        defaultCustomerShouldNotBeFound("createdAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByCreatedAtIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where createdAt is greater than or equal to DEFAULT_CREATED_AT
+        defaultCustomerShouldBeFound("createdAt.greaterThanOrEqual=" + DEFAULT_CREATED_AT);
+
+        // Get all the customerList where createdAt is greater than or equal to UPDATED_CREATED_AT
+        defaultCustomerShouldNotBeFound("createdAt.greaterThanOrEqual=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByCreatedAtIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where createdAt is less than or equal to DEFAULT_CREATED_AT
+        defaultCustomerShouldBeFound("createdAt.lessThanOrEqual=" + DEFAULT_CREATED_AT);
+
+        // Get all the customerList where createdAt is less than or equal to SMALLER_CREATED_AT
+        defaultCustomerShouldNotBeFound("createdAt.lessThanOrEqual=" + SMALLER_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByCreatedAtIsLessThanSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where createdAt is less than DEFAULT_CREATED_AT
+        defaultCustomerShouldNotBeFound("createdAt.lessThan=" + DEFAULT_CREATED_AT);
+
+        // Get all the customerList where createdAt is less than UPDATED_CREATED_AT
+        defaultCustomerShouldBeFound("createdAt.lessThan=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByCreatedAtIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where createdAt is greater than DEFAULT_CREATED_AT
+        defaultCustomerShouldNotBeFound("createdAt.greaterThan=" + DEFAULT_CREATED_AT);
+
+        // Get all the customerList where createdAt is greater than SMALLER_CREATED_AT
+        defaultCustomerShouldBeFound("createdAt.greaterThan=" + SMALLER_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByEmailIsEqualToSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where email equals to DEFAULT_EMAIL
+        defaultCustomerShouldBeFound("email.equals=" + DEFAULT_EMAIL);
+
+        // Get all the customerList where email equals to UPDATED_EMAIL
+        defaultCustomerShouldNotBeFound("email.equals=" + UPDATED_EMAIL);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByEmailIsInShouldWork() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where email in DEFAULT_EMAIL or UPDATED_EMAIL
+        defaultCustomerShouldBeFound("email.in=" + DEFAULT_EMAIL + "," + UPDATED_EMAIL);
+
+        // Get all the customerList where email equals to UPDATED_EMAIL
+        defaultCustomerShouldNotBeFound("email.in=" + UPDATED_EMAIL);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByEmailIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where email is not null
+        defaultCustomerShouldBeFound("email.specified=true");
+
+        // Get all the customerList where email is null
+        defaultCustomerShouldNotBeFound("email.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByEmailContainsSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where email contains DEFAULT_EMAIL
+        defaultCustomerShouldBeFound("email.contains=" + DEFAULT_EMAIL);
+
+        // Get all the customerList where email contains UPDATED_EMAIL
+        defaultCustomerShouldNotBeFound("email.contains=" + UPDATED_EMAIL);
+    }
+
+    @Test
+    @Transactional
+    void getAllCustomersByEmailNotContainsSomething() throws Exception {
+        // Initialize the database
+        customerRepository.saveAndFlush(customer);
+
+        // Get all the customerList where email does not contain DEFAULT_EMAIL
+        defaultCustomerShouldNotBeFound("email.doesNotContain=" + DEFAULT_EMAIL);
+
+        // Get all the customerList where email does not contain UPDATED_EMAIL
+        defaultCustomerShouldBeFound("email.doesNotContain=" + UPDATED_EMAIL);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultCustomerShouldBeFound(String filter) throws Exception {
+        restCustomerMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(customer.getId().intValue())))
+            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
+            .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)));
+
+        // Check, that the count call also returns 1
+        restCustomerMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultCustomerShouldNotBeFound(String filter) throws Exception {
+        restCustomerMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restCustomerMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("0"));
     }
 
     @Test

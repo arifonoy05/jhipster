@@ -2,6 +2,9 @@ package io.project.jhipster.web.rest;
 
 import io.project.jhipster.domain.Customer;
 import io.project.jhipster.repository.CustomerRepository;
+import io.project.jhipster.service.CustomerQueryService;
+import io.project.jhipster.service.CustomerService;
+import io.project.jhipster.service.criteria.CustomerCriteria;
 import io.project.jhipster.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,10 +14,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
@@ -22,7 +29,6 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api")
-@Transactional
 public class CustomerResource {
 
     private final Logger log = LoggerFactory.getLogger(CustomerResource.class);
@@ -32,10 +38,20 @@ public class CustomerResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final CustomerService customerService;
+
     private final CustomerRepository customerRepository;
 
-    public CustomerResource(CustomerRepository customerRepository) {
+    private final CustomerQueryService customerQueryService;
+
+    public CustomerResource(
+        CustomerService customerService,
+        CustomerRepository customerRepository,
+        CustomerQueryService customerQueryService
+    ) {
+        this.customerService = customerService;
         this.customerRepository = customerRepository;
+        this.customerQueryService = customerQueryService;
     }
 
     /**
@@ -51,7 +67,7 @@ public class CustomerResource {
         if (customer.getId() != null) {
             throw new BadRequestAlertException("A new customer cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Customer result = customerRepository.save(customer);
+        Customer result = customerService.save(customer);
         return ResponseEntity
             .created(new URI("/api/customers/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -85,7 +101,7 @@ public class CustomerResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Customer result = customerRepository.save(customer);
+        Customer result = customerService.update(customer);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, customer.getId().toString()))
@@ -120,22 +136,7 @@ public class CustomerResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Customer> result = customerRepository
-            .findById(customer.getId())
-            .map(existingCustomer -> {
-                if (customer.getName() != null) {
-                    existingCustomer.setName(customer.getName());
-                }
-                if (customer.getCreatedAt() != null) {
-                    existingCustomer.setCreatedAt(customer.getCreatedAt());
-                }
-                if (customer.getEmail() != null) {
-                    existingCustomer.setEmail(customer.getEmail());
-                }
-
-                return existingCustomer;
-            })
-            .map(customerRepository::save);
+        Optional<Customer> result = customerService.partialUpdate(customer);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -146,12 +147,31 @@ public class CustomerResource {
     /**
      * {@code GET  /customers} : get all the customers.
      *
+     * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of customers in body.
      */
     @GetMapping("/customers")
-    public List<Customer> getAllCustomers() {
-        log.debug("REST request to get all Customers");
-        return customerRepository.findAll();
+    public ResponseEntity<List<Customer>> getAllCustomers(
+        CustomerCriteria criteria,
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable
+    ) {
+        log.debug("REST request to get Customers by criteria: {}", criteria);
+        Page<Customer> page = customerQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /customers/count} : count all the customers.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/customers/count")
+    public ResponseEntity<Long> countCustomers(CustomerCriteria criteria) {
+        log.debug("REST request to count Customers by criteria: {}", criteria);
+        return ResponseEntity.ok().body(customerQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -163,7 +183,7 @@ public class CustomerResource {
     @GetMapping("/customers/{id}")
     public ResponseEntity<Customer> getCustomer(@PathVariable Long id) {
         log.debug("REST request to get Customer : {}", id);
-        Optional<Customer> customer = customerRepository.findById(id);
+        Optional<Customer> customer = customerService.findOne(id);
         return ResponseUtil.wrapOrNotFound(customer);
     }
 
@@ -176,7 +196,7 @@ public class CustomerResource {
     @DeleteMapping("/customers/{id}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
         log.debug("REST request to delete Customer : {}", id);
-        customerRepository.deleteById(id);
+        customerService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
