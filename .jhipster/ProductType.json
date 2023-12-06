@@ -1,0 +1,15 @@
+{
+  "changelogDate": "20231205113327",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "category",
+      "fieldType": "String"
+    }
+  ],
+  "name": "ProductType",
+  "relationships": []
+}
