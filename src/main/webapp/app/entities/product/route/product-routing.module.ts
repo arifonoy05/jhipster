@@ -9,42 +9,42 @@ import { ProductRoutingResolveService } from './product-routing-resolve.service'
 import { ASC } from 'app/config/navigation.constants';
 
 const productRoute: Routes = [
-  {
-    path: '',
-    component: ProductComponent,
-    data: {
-      defaultSort: 'id,' + ASC,
+    {
+        path: '',
+        component: ProductComponent,
+        data: {
+            defaultSort: 'id,' + ASC,
+        },
+        canActivate: [UserRouteAccessService]
     },
-    canActivate: [UserRouteAccessService],
-  },
-  {
-    path: ':id/view',
-    component: ProductDetailComponent,
-    resolve: {
-      product: ProductRoutingResolveService,
+    {
+        path: ':id/view',
+        component: ProductDetailComponent,
+        resolve: {
+            product: ProductRoutingResolveService
+        },
+        canActivate: [UserRouteAccessService]
     },
-    canActivate: [UserRouteAccessService],
-  },
-  {
-    path: 'new',
-    component: ProductUpdateComponent,
-    resolve: {
-      product: ProductRoutingResolveService,
+    {
+        path: 'new',
+        component: ProductUpdateComponent,
+        resolve: {
+            product: ProductRoutingResolveService
+        },
+        canActivate: [UserRouteAccessService]
     },
-    canActivate: [UserRouteAccessService],
-  },
-  {
-    path: ':id/edit',
-    component: ProductUpdateComponent,
-    resolve: {
-      product: ProductRoutingResolveService,
+    {
+        path: ':id/edit',
+        component: ProductUpdateComponent,
+        resolve: {
+            product: ProductRoutingResolveService
+        },
+        canActivate: [UserRouteAccessService]
     },
-    canActivate: [UserRouteAccessService],
-  },
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(productRoute)],
-  exports: [RouterModule],
+    imports: [RouterModule.forChild(productRoute)],
+    exports: [RouterModule],
 })
 export class ProductRoutingModule {}

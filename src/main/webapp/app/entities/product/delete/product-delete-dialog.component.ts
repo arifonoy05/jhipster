@@ -6,20 +6,20 @@ import { ProductService } from '../service/product.service';
 import { ITEM_DELETED_EVENT } from 'app/config/navigation.constants';
 
 @Component({
-  templateUrl: './product-delete-dialog.component.html',
+    templateUrl: './product-delete-dialog.component.html'
 })
 export class ProductDeleteDialogComponent {
-  product?: IProduct;
+    product?: IProduct;
 
-  constructor(protected productService: ProductService, protected activeModal: NgbActiveModal) {}
+    constructor(protected productService: ProductService, protected activeModal: NgbActiveModal) {}
 
-  cancel(): void {
-    this.activeModal.dismiss();
-  }
+    cancel(): void {
+        this.activeModal.dismiss();
+    }
 
-  confirmDelete(id: number): void {
-    this.productService.delete(id).subscribe(() => {
-      this.activeModal.close(ITEM_DELETED_EVENT);
-    });
-  }
+    confirmDelete(id: number): void {
+        this.productService.delete(id).subscribe(() => {
+            this.activeModal.close(ITEM_DELETED_EVENT);
+        });
+    }
 }

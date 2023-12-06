@@ -7,7 +7,6 @@
         <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
         <span>Refresh list</span>
       </button>
-
       <button
         id="jh-create-entity"
         data-cy="entityCreateButton"
@@ -19,10 +18,57 @@
       </button>
     </div>
   </h2>
+  
+  <span id="searchBlock">
+    <form [formGroup]="searchForm" (submit)="doAdvancedSearch()">
+      <div class="modal-header">
+        <h4 class="modal-title" data-cy="productDeleteDialogHeading">Search</h4>
+      </div>
+    
+      <div class="modal-body">
+        <jhi-alert-error></jhi-alert-error>
+        <div>
+          <jhi-alert-error></jhi-alert-error>
+          <div class="row mb-3">
+            <label class="form-label" for="field_name">Name</label>
+            <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
+          </div>
+    
+          <div class="row mb-3">
+            <label class="form-label" for="field_price">Price</label>
+            <input type="number" class="form-control" name="price" id="field_price" data-cy="price" formControlName="price" />
+          </div>
+    
+          <div class="row mb-3">
+            <label class="form-label" for="field_quantity">Quantity</label>
+            <input type="number" class="form-control" name="quantity" id="field_quantity" data-cy="quantity" formControlName="quantity" />
+          </div>
+
+          <div class="row mb-3">
+            <label class="form-label" for="field_publishDate">Publish Date</label>
+            <input type="date" class="form-control" name="publishDate" id="field_publishDate" data-cy="publishDate" formControlName="publishDate" />
+          </div>
+        </div>
+      </div>
+    
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="resetForm()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span>Reset</span>
+        </button>
+    
+        <button id="jhi-confirm-delete-product" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-primary">
+          <fa-icon icon="search"></fa-icon>&nbsp;<span>Search</span>
+        </button>
+      </div>
+    </form>
+    
+  </span>
 
   <jhi-alert-error></jhi-alert-error>
 
   <jhi-alert></jhi-alert>
+
+  <jhi-filter [filters]="filters"></jhi-filter>
 
   <div class="alert alert-warning" id="no-result" *ngIf="products?.length === 0">
     <span>No Products found</span>
@@ -80,7 +126,7 @@
           <td>{{ product.price }}</td>
           <td>{{ product.quantity }}</td>
           <td>{{ product.description }}</td>
-          <td>{{ product.publishDate | formatMediumDate }}</td>
+          <td>{{ product.publishDate }}</td>
           <td class="text-end">
             <div class="btn-group">
               <button

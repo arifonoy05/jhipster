@@ -5,9 +5,20 @@ import { ProductDetailComponent } from './detail/product-detail.component';
 import { ProductUpdateComponent } from './update/product-update.component';
 import { ProductDeleteDialogComponent } from './delete/product-delete-dialog.component';
 import { ProductRoutingModule } from './route/product-routing.module';
+import { ProductSearchComponent } from './product-search/product-search.component';
 
 @NgModule({
-  imports: [SharedModule, ProductRoutingModule],
-  declarations: [ProductComponent, ProductDetailComponent, ProductUpdateComponent, ProductDeleteDialogComponent],
+  imports: [
+    SharedModule,
+    ProductRoutingModule,
+  ],
+  declarations: [
+    ProductComponent,
+    ProductDetailComponent,
+    ProductUpdateComponent,
+    ProductDeleteDialogComponent,
+    ProductSearchComponent,
+
+  ],
 })
 export class ProductModule {}

@@ -1,28 +1,24 @@
-import dayjs from 'dayjs/esm';
+
 
 import { IProduct, NewProduct } from './product.model';
 
 export const sampleWithRequiredData: IProduct = {
-  id: 77672,
+  id: 77672
 };
 
 export const sampleWithPartialData: IProduct = {
-  id: 78560,
-  description: 'Brand Programmable',
-  publishDate: dayjs('2023-12-05'),
+  id: 82518
 };
 
 export const sampleWithFullData: IProduct = {
-  id: 49054,
-  name: 'deliver',
-  price: 39641,
-  quantity: 99933,
-  description: 'driver synthesizing',
-  publishDate: dayjs('2023-12-04'),
+  id: 96307,
+  name: 'collaborative SSL Concrete',
+  price: 31634,
+  quantity: 40139
 };
 
 export const sampleWithNewData: NewProduct = {
-  id: null,
+  id: null
 };
 
 Object.freeze(sampleWithNewData);

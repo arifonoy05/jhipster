@@ -6,130 +6,225 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { IProduct } from '../product.model';
 
-import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
+import {
+  ITEMS_PER_PAGE,
+  PAGE_HEADER,
+  TOTAL_COUNT_RESPONSE_HEADER,
+} from 'app/config/pagination.constants';
+import {
+  ASC,
+  DESC,
+  SORT,
+  ITEM_DELETED_EVENT,
+  DEFAULT_SORT_DATA
+} from 'app/config/navigation.constants';
 import { EntityArrayResponseType, ProductService } from '../service/product.service';
 import { ProductDeleteDialogComponent } from '../delete/product-delete-dialog.component';
+import { FilterOptions, IFilterOptions, IFilterOption } from 'app/shared/filter/filter.model';
+import { ProductSearchComponent } from '../product-search/product-search.component';
+import { FormControl, FormGroup } from '@angular/forms';
 
 @Component({
-  selector: 'jhi-product',
-  templateUrl: './product.component.html',
+    selector: 'jhi-product',
+    templateUrl: './product.component.html'
 })
 export class ProductComponent implements OnInit {
-  products?: IProduct[];
-  isLoading = false;
 
-  predicate = 'id';
-  ascending = true;
+    products?: IProduct[];
+    isLoading = false;
 
-  itemsPerPage = ITEMS_PER_PAGE;
-  totalItems = 0;
-  page = 1;
+    predicate = 'id';
+    ascending = true;
+    filters: IFilterOptions = new FilterOptions();
 
-  constructor(
-    protected productService: ProductService,
-    protected activatedRoute: ActivatedRoute,
-    public router: Router,
-    protected modalService: NgbModal
-  ) {}
+    itemsPerPage = ITEMS_PER_PAGE;
+    totalItems = 0;
+    page = 1;
 
-  trackId = (_index: number, item: IProduct): number => this.productService.getProductIdentifier(item);
+    searchForm = new FormGroup({
+      name: new FormControl(null),
+      price: new FormControl(null),
+      quantity: new FormControl(null),
+      publishDate: new FormControl(null),
+    });
+  
 
-  ngOnInit(): void {
-    this.load();
-  }
+    constructor(
+      protected productService: ProductService,
+      protected activatedRoute: ActivatedRoute,
+      public router: Router,
+      protected modalService: NgbModal
+    ) {}
 
-  delete(product: IProduct): void {
-    const modalRef = this.modalService.open(ProductDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.product = product;
-    // unsubscribe not needed because closed completes on modal close
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
-        switchMap(() => this.loadFromBackendWithRouteInformations())
-      )
-      .subscribe({
+    trackId = (_index: number, item: IProduct): number => this.productService.getProductIdentifier(item);
+
+    ngOnInit(): void {
+      this.load();
+
+      this.filters.filterChanges.subscribe(filterOptions => this.handleNavigation(1, this.predicate, this.ascending, filterOptions));
+
+    }
+
+    delete(product: IProduct): void {
+      const modalRef = this.modalService.open(ProductDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
+      modalRef.componentInstance.product = product;
+      // unsubscribe not needed because closed completes on modal close
+      modalRef.closed
+        .pipe(
+          filter(reason => reason === ITEM_DELETED_EVENT),
+          switchMap(() => this.loadFromBackendWithRouteInformations())
+        ).subscribe(
+          {
+            next: (res: EntityArrayResponseType) => {
+            this.onResponseSuccess(res);
+          }
+        });
+    }
+
+    load(): void {
+      this.loadFromBackendWithRouteInformations().subscribe({
         next: (res: EntityArrayResponseType) => {
           this.onResponseSuccess(res);
-        },
+        }
       });
-  }
-
-  load(): void {
-    this.loadFromBackendWithRouteInformations().subscribe({
-      next: (res: EntityArrayResponseType) => {
-        this.onResponseSuccess(res);
-      },
-    });
-  }
-
-  navigateToWithComponentValues(): void {
-    this.handleNavigation(this.page, this.predicate, this.ascending);
-  }
-
-  navigateToPage(page = this.page): void {
-    this.handleNavigation(page, this.predicate, this.ascending);
-  }
-
-  protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
-    return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
-      tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
-      switchMap(() => this.queryBackend(this.page, this.predicate, this.ascending))
-    );
-  }
-
-  protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
-    const page = params.get(PAGE_HEADER);
-    this.page = +(page ?? 1);
-    const sort = (params.get(SORT) ?? data[DEFAULT_SORT_DATA]).split(',');
-    this.predicate = sort[0];
-    this.ascending = sort[1] === ASC;
-  }
-
-  protected onResponseSuccess(response: EntityArrayResponseType): void {
-    this.fillComponentAttributesFromResponseHeader(response.headers);
-    const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
-    this.products = dataFromBody;
-  }
-
-  protected fillComponentAttributesFromResponseBody(data: IProduct[] | null): IProduct[] {
-    return data ?? [];
-  }
-
-  protected fillComponentAttributesFromResponseHeader(headers: HttpHeaders): void {
-    this.totalItems = Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER));
-  }
-
-  protected queryBackend(page?: number, predicate?: string, ascending?: boolean): Observable<EntityArrayResponseType> {
-    this.isLoading = true;
-    const pageToLoad: number = page ?? 1;
-    const queryObject = {
-      page: pageToLoad - 1,
-      size: this.itemsPerPage,
-      sort: this.getSortQueryParam(predicate, ascending),
-    };
-    return this.productService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
-  }
-
-  protected handleNavigation(page = this.page, predicate?: string, ascending?: boolean): void {
-    const queryParamsObj = {
-      page,
-      size: this.itemsPerPage,
-      sort: this.getSortQueryParam(predicate, ascending),
-    };
-
-    this.router.navigate(['./'], {
-      relativeTo: this.activatedRoute,
-      queryParams: queryParamsObj,
-    });
-  }
-
-  protected getSortQueryParam(predicate = this.predicate, ascending = this.ascending): string[] {
-    const ascendingQueryParam = ascending ? ASC : DESC;
-    if (predicate === '') {
-      return [];
-    } else {
-      return [predicate + ',' + ascendingQueryParam];
     }
-  }
+
+    navigateToWithComponentValues(): void {
+      this.handleNavigation(this.page, this.predicate, this.ascending, this.filters.filterOptions);
+    }
+
+    navigateToPage(page = this.page): void {
+      this.handleNavigation(page, this.predicate, this.ascending, this.filters.filterOptions);
+    }
+
+    protected loadFromBackendWithSearchInformations(searchObj: any): Observable<EntityArrayResponseType> {
+      return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
+      .pipe(
+        tap(([params, data]) => {
+          console.log(params, data, searchObj);
+          this.fillComponentAttributeFromRoute(params, data)}),
+        switchMap(() =>
+          this.querySearchBackend(searchObj ,this.page, this.predicate, this.ascending, this.filters.filterOptions)
+        )
+      );
+    }
+
+    protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
+      return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
+        .pipe(
+          tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
+          switchMap(() =>
+            this.queryBackend(this.page, this.predicate, this.ascending, this.filters.filterOptions)
+          )
+        );
+    }
+
+    protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
+      const page = params.get(PAGE_HEADER);
+      this.page = +(page ?? 1);
+      const sort = (params.get(SORT) ?? data[ DEFAULT_SORT_DATA ]).split(',');
+      this.predicate = sort[ 0 ];
+      this.ascending = sort[ 1 ] === ASC;
+      this.filters.initializeFromParams(params);
+    }
+
+    protected onResponseSuccess(response: EntityArrayResponseType): void {
+      this.fillComponentAttributesFromResponseHeader(response.headers);
+      const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
+      this.products =  dataFromBody;
+    }
+
+    protected fillComponentAttributesFromResponseBody(data: IProduct[] | null): IProduct[] {
+        return data ?? [];
+    }
+
+    protected fillComponentAttributesFromResponseHeader(headers: HttpHeaders): void {
+      this.totalItems = Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER));
+    }
+
+    protected queryBackend(page?: number, predicate?: string, ascending?: boolean, filterOptions?: IFilterOption[]): Observable<EntityArrayResponseType> {
+      this.isLoading = true;
+      const pageToLoad: number = page ?? 1;
+      const queryObject: any  = {
+        page: pageToLoad - 1,
+        size: this.itemsPerPage,
+        sort: this.getSortQueryParam(predicate, ascending),
+      };
+      filterOptions?.forEach(filterOption => {
+        queryObject[filterOption.name] = filterOption.values;
+      });
+        return this.productService.query(queryObject)
+          .pipe(
+            tap(() => this.isLoading = false)
+          );
+    }
+    protected querySearchBackend(searchObj?: any ,page?: number, predicate?: string, ascending?: boolean, filterOptions?: IFilterOption[]): Observable<EntityArrayResponseType> {
+      this.isLoading = true;
+      const pageToLoad: number = page ?? 1;
+      
+      const queryObject: any  = {
+        ... searchObj,
+        page: pageToLoad - 1,
+        size: this.itemsPerPage,
+        sort: this.getSortQueryParam(predicate, ascending),
+      };
+      
+
+
+      filterOptions?.forEach(filterOption => {
+        queryObject[filterOption.name] = filterOption.values;
+      });
+      console.log(queryObject);
+      
+        return this.productService.query(queryObject)
+          .pipe(
+            tap(() => this.isLoading = false)
+          );
+    }
+
+    protected handleNavigation(page = this.page, predicate?: string, ascending?: boolean, filterOptions?: IFilterOption[]): void {
+      const queryParamsObj: any= {
+        page,
+        size: this.itemsPerPage,
+        sort: this.getSortQueryParam(predicate, ascending),
+      };
+
+      filterOptions?.forEach(filterOption => {
+        queryParamsObj[filterOption.nameAsQueryParam()] = filterOption.values;
+      });
+
+      this.router.navigate([ './' ], {
+        relativeTo: this.activatedRoute,
+        queryParams: queryParamsObj,
+      });
+    }
+
+    protected getSortQueryParam(predicate = this.predicate, ascending = this.ascending): string[] {
+      const ascendingQueryParam = ascending ? ASC : DESC;
+      if (predicate === '') {
+        return [];
+      } else {
+        return [predicate + ',' + ascendingQueryParam];
+      }
+    }
+
+    resetForm(): void {
+      this.searchForm = new FormGroup({
+        name: new FormControl(null),
+        price: new FormControl(null),
+        quantity: new FormControl(null),
+        publishDate: new FormControl(null)
+      });
+      this.doAdvancedSearch();
+    }
+
+    doAdvancedSearch(): void {
+      console.log(this.searchForm.value);
+      this.loadFromBackendWithSearchInformations(this.searchForm.value).subscribe({
+        next: (res: EntityArrayResponseType) => {
+          console.log(res);
+          this.onResponseSuccess(res);
+        }
+      });
+    }
 }

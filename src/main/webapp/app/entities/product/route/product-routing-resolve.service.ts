@@ -9,22 +9,22 @@ import { ProductService } from '../service/product.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProductRoutingResolveService implements Resolve<IProduct | null> {
-  constructor(protected service: ProductService, protected router: Router) {}
+    constructor(protected service: ProductService, protected router: Router) {}
 
-  resolve(route: ActivatedRouteSnapshot): Observable<IProduct | null | never> {
-    const id = route.params['id'];
-    if (id) {
-      return this.service.find(id).pipe(
-        mergeMap((product: HttpResponse<IProduct>) => {
-          if (product.body) {
-            return of(product.body);
-          } else {
-            this.router.navigate(['404']);
-            return EMPTY;
-          }
-        })
-      );
+    resolve(route: ActivatedRouteSnapshot): Observable<IProduct | null | never> {
+        const id = route.params['id'];
+        if (id) {
+            return this.service.find(id).pipe(
+                mergeMap((product: HttpResponse<IProduct>) => {
+                    if (product.body) {
+                        return of(product.body);
+                    } else {
+                        this.router.navigate(['404']);
+                        return EMPTY;
+                    }
+                })
+            );
+        }
+        return of(null);
     }
-    return of(null);
-  }
 }

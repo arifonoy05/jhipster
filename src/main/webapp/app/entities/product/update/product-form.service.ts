@@ -30,23 +30,38 @@ export type ProductFormGroup = FormGroup<ProductFormGroupContent>;
 @Injectable({ providedIn: 'root' })
 export class ProductFormService {
   createProductFormGroup(product: ProductFormGroupInput = { id: null }): ProductFormGroup {
-    const productRawValue = {
-      ...this.getFormDefaults(),
-      ...product,
-    };
+    const productRawValue =
+        {
+          ...this.getFormDefaults(),
+          ...product,
+        }
+    ;
+
     return new FormGroup<ProductFormGroupContent>({
       id: new FormControl(
         { value: productRawValue.id, disabled: true },
         {
           nonNullable: true,
-          validators: [Validators.required],
+          validators: [
+            Validators.required,
+          ],
         }
       ),
-      name: new FormControl(productRawValue.name),
-      price: new FormControl(productRawValue.price),
-      quantity: new FormControl(productRawValue.quantity),
-      description: new FormControl(productRawValue.description),
-      publishDate: new FormControl(productRawValue.publishDate),
+      name: new FormControl(
+        productRawValue.name,
+      ),
+      price: new FormControl(
+        productRawValue.price,
+      ),
+      quantity: new FormControl(
+        productRawValue.quantity,
+      ),
+      description: new FormControl(
+        productRawValue.description,
+      ),
+      publishDate: new FormControl(
+        productRawValue.publishDate,
+      ),
     });
   }
 
@@ -55,16 +70,17 @@ export class ProductFormService {
   }
 
   resetForm(form: ProductFormGroup, product: ProductFormGroupInput): void {
-    const productRawValue = { ...this.getFormDefaults(), ...product };
-    form.reset(
-      {
-        ...productRawValue,
-        id: { value: productRawValue.id, disabled: true },
-      } as any /* cast to workaround https://github.com/angular/angular/issues/46458 */
-    );
+    const productRawValue =
+        {...this.getFormDefaults(), ...product }
+    ;
+    form.reset({
+      ...productRawValue,
+      id: { value: productRawValue.id, disabled: true },
+    } as any /* cast to workaround https://github.com/angular/angular/issues/46458 */);
   }
 
   private getFormDefaults(): ProductFormDefaults {
+
     return {
       id: null,
     };

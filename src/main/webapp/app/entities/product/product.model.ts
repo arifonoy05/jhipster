@@ -1,4 +1,5 @@
-import dayjs from 'dayjs/esm';
+import dayjs from "dayjs";
+
 
 export interface IProduct {
   id: number;

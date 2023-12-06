@@ -25,7 +25,7 @@ describe('Product routing resolve service', () => {
           provide: ActivatedRoute,
           useValue: {
             snapshot: {
-              paramMap: convertToParamMap({}),
+              paramMap: convertToParamMap({})
             },
           },
         },

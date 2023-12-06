@@ -23,8 +23,6 @@ describe('Product Form Service', () => {
             name: expect.any(Object),
             price: expect.any(Object),
             quantity: expect.any(Object),
-            description: expect.any(Object),
-            publishDate: expect.any(Object),
           })
         );
       });
@@ -32,16 +30,12 @@ describe('Product Form Service', () => {
       it('passing IProduct should create a new form with FormGroup', () => {
         const formGroup = service.createProductFormGroup(sampleWithRequiredData);
 
-        expect(formGroup.controls).toEqual(
-          expect.objectContaining({
-            id: expect.any(Object),
-            name: expect.any(Object),
-            price: expect.any(Object),
-            quantity: expect.any(Object),
-            description: expect.any(Object),
-            publishDate: expect.any(Object),
-          })
-        );
+        expect(formGroup.controls).toEqual(expect.objectContaining({
+          id: expect.any(Object),
+          name: expect.any(Object),
+          price: expect.any(Object),
+          quantity: expect.any(Object),
+        }));
       });
     });
 
